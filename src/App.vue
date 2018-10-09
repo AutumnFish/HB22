@@ -123,7 +123,7 @@
 // 最顶级的 组件 类似于布局中 最顶级的 那个div
 export default {
   // chrome的 dev-tools中看到的名字
-  name: "HB"
+  name: 'HB'
 };
 </script>
 
