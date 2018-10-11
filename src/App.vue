@@ -120,14 +120,61 @@
 </template>
 
 <script>
+// 导入jq
+import $ from "jquery";
 // 最顶级的 组件 类似于布局中 最顶级的 那个div
 export default {
   // chrome的 dev-tools中看到的名字
-  name: 'HB'
+  name: "HB",
+  // beforeCreate 创建之前
+  // created 创建完毕
+  created() {},
+  // 把template中的结构渲染出来之前
+  beforeMount() {
+    // 挂载之前
+    // console.log("beforeMount");
+    // console.log(document.body.innerHTML);
+  },
+  // 把template中的结构渲染出来之后
+  // 操纵dom元素一般放这
+  mounted() {
+    // 挂载完成
+    // console.log("mounted");
+    // console.log(document.body.innerHTML);
+    $("#menu2 li a").wrapInner('<span class="out"></span>');
+    $("#menu2 li a").each(function() {
+      $('<span class="over">' + $(this).text() + "</span>").appendTo(this);
+    });
+    $("#menu2 li a").hover(
+      function() {
+        $(".out", this)
+          .stop()
+          .animate({ top: "48px" }, 300); // move down - hide
+        $(".over", this)
+          .stop()
+          .animate({ top: "0px" }, 300); // move down - show
+      },
+      function() {
+        $(".out", this)
+          .stop()
+          .animate({ top: "0px" }, 300); // move up - show
+        $(".over", this)
+          .stop()
+          .animate({ top: "-48px" }, 300); // move up - hide
+      }
+    );
+  }
 };
+// 迁移的js代码 安装jQ 引入jQ
+// jQ的入口函数
+// $(document).ready(function() {});
 </script>
 
 <style>
 /* 导入样式
 @import url("./assets/statics/site/css/style.css"); */
+/* 动画span的样式 */
+.menuhd ul li a span.over {
+  background-color: yellowgreen;
+}
 </style>
