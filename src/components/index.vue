@@ -118,10 +118,10 @@
 </template>
 <script>
 // 导入 axios 迁移到 main.js中 为了让全局使用
-// import axios from "axios";
+// import axios from "axios";sho
 // 导入 moment.js
 // 发请求 获取数据
-import moment from "moment";
+// import moment from "moment";
 // 类似于module.exports
 export default {
   name: "index",
@@ -137,22 +137,22 @@ export default {
       orderlist: []
     };
   },
-  //   过滤器
-  filters: {
-    // value 就是你要过滤的值
-    // 参数1 是过滤的那个值，后面才是你要的参数
-    beautifyTime(value, str, str2, str3) {
-      //   console.log(str);
-      //   console.log(str2);
-      //   console.log(str3);
-      // 处理value
-      //   console.log(value);
-      // 返回处理之后的value
-      //   return '🐷🐷🐷🐷';
-      // 格式化日期 使用moment.js来格式化
-      return moment(value).format(`YYYY${str}MM${str2}DD${str3}`);
-    }
-  },
+  //   局部过滤器 迁移到全局
+//   filters: {
+//     // value 就是你要过滤的值
+//     // 参数1 是过滤的那个值，后面才是你要的参数
+//     beautifyTime(value, str, str2, str3) {
+//       //   console.log(str);
+//       //   console.log(str2);
+//       //   console.log(str3);
+//       // 处理value
+//       //   console.log(value);
+//       // 返回处理之后的value
+//       //   return '🐷🐷🐷🐷';
+//       // 格式化日期 使用moment.js来格式化
+//       return moment(value).format(`YYYY${str}MM${str2}DD${str3}`);
+//     }
+//   },
   // 生命周期函数
   // 创建之前
   beforeCreate() {
@@ -165,7 +165,7 @@ export default {
     // console.log(this.message);
     // 顶部数据
     this.$axios
-      .get("http://111.230.232.110:8899/site/goods/gettopdata/goods")
+      .get("/site/goods/gettopdata/goods")
       .then(response => {
         // console.log(response);
         // 可以处理数据中的日期格式 再赋值(moment.js)
@@ -175,7 +175,7 @@ export default {
       });
     // 下部分类数据
     this.$axios
-      .get("http://111.230.232.110:8899/site/goods/getgoodsgroup")
+      .get("/site/goods/getgoodsgroup")
       .then(response => {
         // console.log(response);
         this.orderlist = response.data.message;
