@@ -23,11 +23,14 @@
               <a>退出</a>
               <strong>|</strong>
             </span>
-            <a href="" class="">
-              <i class="iconfont icon-cart"></i>购物车(
+            <!-- <a href="" class=""> -->
+            <router-link to="/shopcart">
+              <i class="iconfont icon-cart" ref="cart"></i>购物车(
               <span id="shoppingCartCount">
-                <span>4</span>
-              </span>)</a>
+                <span>{{$store.getters.cartGoodCount}}</span>
+              </span>)
+            </router-link>
+            <!-- </a> -->
           </div>
         </div>
       </div>
@@ -82,6 +85,7 @@
         </div>
       </div>
     </div>
+    <!-- <input type="button" value="累加数字" @click="add"> -->
     <!-- 组件出口 -->
     <router-view></router-view>
     <!-- 底部 -->
@@ -116,6 +120,10 @@
         </div>
       </div>
     </div>
+    <!-- 返回顶部 -->
+    <BackTop :height="100" :bottom="50">
+      <div class="top " style='transform:rotate(-45deg)'>🚀</div>
+    </BackTop>
   </div>
 </template>
 
@@ -128,7 +136,10 @@ export default {
   name: "HB",
   // beforeCreate 创建之前
   // created 创建完毕
-  created() {},
+  created() {
+    // console.log(this.$store);
+    console.log(this.$store.state.count);
+  },
   // 把template中的结构渲染出来之前
   beforeMount() {
     // 挂载之前
@@ -163,6 +174,17 @@ export default {
           .animate({ top: "-48px" }, 300); // move up - hide
       }
     );
+  },
+  // 方法
+  methods: {
+    add() {
+      // 修改 Vuex 仓库中的数据
+      // this.$store.commit("increment");
+      this.$store.commit("addCart", {
+        id: 66,
+        buyCount: 98
+      });
+    }
   }
 };
 // 迁移的js代码 安装jQ 引入jQ
@@ -176,5 +198,16 @@ export default {
 /* 动画span的样式 */
 .menuhd ul li a span.over {
   background-color: yellowgreen;
+}
+/* 返回顶部样式 */
+.top {
+  padding: 10px;
+  /* background: rgba(0, 153, 229, 0.7); */
+  color: #fff;
+  text-align: center;
+  font-size: 50px;
+  border: 1px solid skyblue;
+  border-radius: 50%;
+  /* border-radius: 2px; */
 }
 </style>

@@ -1,5 +1,7 @@
 <template>
     <div>
+        <!-- 测试累加按钮 -->
+        <!-- <input type="button" value='detail的累加' @click="detailAdd"> -->
         <div class="section">
             <div class="location">
                 <span>当前位置：</span>
@@ -13,7 +15,11 @@
                 <div class="wrap-box">
                     <div class="left-925">
                         <div class="goods-box clearfix">
-                            <div class="pic-box"></div>
+                            <div class="pic-box" v-if="images.normal_size.length!=0">
+                                <!-- 放大镜组件 -->
+                                <ProductZoomer :base-images="images" :base-zoomer-options="zoomerOptions" />
+                            </div>
+                            <!-- 商品信息 -->
                             <div class="goods-spec">
                                 <h1>{{goodsinfo.title}}</h1>
                                 <p class="subtitle">{{goodsinfo.sub_title}}</p>
@@ -53,7 +59,7 @@
                                         <dd>
                                             <div id="buyButton" class="btn-buy">
                                                 <button onclick="cartAdd(this,'/',1,'/shopping.html');" class="buy">立即购买</button>
-                                                <button onclick="cartAdd(this,'/',0,'/cart.html');" class="add">加入购物车</button>
+                                                <button @click="addCart" ref='add' class="add">加入购物车</button>
                                             </div>
                                         </dd>
                                     </dl>
@@ -61,19 +67,21 @@
                             </div>
                         </div>
                         <div id="goodsTabs" class="goods-tab bg-wrap">
-                            <div id="tabHead" class="tab-head" style="position: static; top: 517px; width: 925px;">
-                                <ul>
-                                    <li>
-                                        <!-- 逻辑比较简单 直接写在标签内 点击之后切换 selectIndex的值
+                            <Affix>
+                                <div id="tabHead" class="tab-head" style="position: static; top: 517px; width: 925px;">
+                                    <ul>
+                                        <li>
+                                            <!-- 逻辑比较简单 直接写在标签内 点击之后切换 selectIndex的值
                                             是否有selected这个类名取决于 selectIndex的值
                                          -->
-                                        <a @click="selectIndex=0" href="javascript:;" :class="{selected:selectIndex==0}">商品介绍</a>
-                                    </li>
-                                    <li>
-                                        <a @click="selectIndex=1" href="javascript:;" :class="{selected:selectIndex==1}">商品评论</a>
-                                    </li>
-                                </ul>
-                            </div>
+                                            <a @click="selectIndex=0" href="javascript:;" :class="{selected:selectIndex==0}">商品介绍</a>
+                                        </li>
+                                        <li>
+                                            <a @click="selectIndex=1" href="javascript:;" :class="{selected:selectIndex==1}">商品评论</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </Affix>
                             <!-- v-html 直接解析为html标签 -->
                             <div class="tab-content entry" v-show="selectIndex==0" v-html="goodsinfo.content">
                             </div>
@@ -85,33 +93,33 @@
                                         </div>
                                         <div class="conn-box">
                                             <div class="editor">
-                                                <textarea id="txtContent" name="txtContent" sucmsg=" " datatype="*10-1000" nullmsg="请填写评论内容！"></textarea>
+                                                <textarea id="txtContent" v-model.trim="message" name="txtContent" sucmsg=" " datatype="*10-1000" nullmsg="请填写评论内容！"></textarea>
                                                 <span class="Validform_checktip"></span>
                                             </div>
                                             <div class="subcon">
-                                                <input id="btnSubmit" name="submit" type="submit" value="提交评论" class="submit">
+                                                <input id="btnSubmit" @click="subComment" name="submit" type="submit" value="提交评论" class="submit">
                                                 <span class="Validform_checktip"></span>
                                             </div>
                                         </div>
                                     </div>
                                     <ul id="commentList" class="list-box">
-                                        <p style="margin: 5px 0px 15px 69px; line-height: 42px; text-align: center; border: 1px solid rgb(247, 247, 247);">暂无评论，快来抢沙发吧！</p>
-                                        <li v-for="(item, index) in comments" :key="item.id">
+                                        <p v-show="comments.length==0" style="margin: 5px 0px 15px 69px; line-height: 42px; text-align: center; border: 1px solid rgb(247, 247, 247);">暂无评论，快来抢沙发吧！</p>
+                                        <li v-show="comments.length!=0" v-for="(item, index) in comments" :key="item.id">
                                             <div class="avatar-box">
                                                 <i class="iconfont icon-user-full"></i>
                                             </div>
                                             <div class="inner-box">
                                                 <div class="info">
                                                     <span>{{item.user_name}}</span>
-                                                    <span>{{item.add_time | beautifyTime('年','月','日')}}</span>
+                                                    <span>{{item.add_time | beautifyTimePro('YYYY/MM/DD HH:mm:ss')}}</span>
                                                 </div>
                                                 <p>{{item.content}}</p>
                                             </div>
                                         </li>
                                     </ul>
-                                    <div class="page-box" style="margin: 5px 0px 0px 62px;">
+                                    <div v-show="comments.length!=0" class="page-box" style="margin: 5px 0px 0px 62px;">
                                         <!-- 使用iView的分页插件 -->
-                                        <Page @on-change="pageChange" :total="totalcount" placement='top' :page-size-opts='[6,16,26,36]' :page-size=6 show-elevator show-sizer />
+                                        <Page :current='pageIndex' @on-page-size-change=" sizeChange" @on-change="pageChange" :total="totalcount" placement='top' :page-size-opts='[6,16,26,36]' :page-size=6 show-elevator show-sizer />
                                     </div>
                                 </div>
                             </div>
@@ -146,9 +154,12 @@
                 </div>
             </div>
         </div>
+        <div class="move" ref='move'></div>
     </div>
 </template>
 <script>
+// 导入jq
+import $ from "jquery";
 export default {
   name: "Detail",
   data: function() {
@@ -171,7 +182,41 @@ export default {
       // 总条数
       totalcount: 0,
       // 评论内容
-      comments:[]
+      comments: [],
+      // 发表的评论信息
+      message: "",
+      // 放大镜图片数据
+      images: {
+        normal_size: [
+          {
+            id: 1,
+            url:
+              "http://img4.imgtn.bdimg.com/it/u=2131988536,2410504660&fm=11&gp=0.jpg"
+          },
+          {
+            id: 2,
+            url:
+              "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1539919185&di=db2e7162dcc8cf7d0763594b4c9c6fd9&imgtype=jpg&er=1&src=http%3A%2F%2Fimg77.ph.126.net%2F9bLTJ2JP7-qPNCGuZf-Ndw%3D%3D%2F3023885674804087701.jpg"
+          }
+        ]
+      },
+      //   zoomer的选项
+      zoomerOptions: {
+        //   放大倍数
+        zoomFactor: 8,
+        // 放大样式
+        pane: "container-round",
+        // 多久出来
+        hoverDelay: 300,
+        // 类前缀
+        namespace: "inline-zoomer-hahaha",
+        // 点击移动
+        move_by_click: true,
+        // 滚动的图片张数
+        scroll_items: 5,
+        // 选中的缩略图边框颜色
+        choosed_thumb_border_color: "#FF327A"
+      }
     };
   },
   //   事件
@@ -182,6 +227,9 @@ export default {
     },
     // 根据id获取 商品数据的方法
     getGoodInfo() {
+      // 每次请求之前 清空 图片数组
+      // 原始数据赋值为空
+      this.images.normal_size = [];
       this.$axios
         .get("/site/goods/getgoodsinfo/" + this.goodId)
         .then(response => {
@@ -192,6 +240,17 @@ export default {
           this.hotgoodslist = response.data.message.hotgoodslist;
           // 图片列表
           this.imglist = response.data.message.imglist;
+          // 处理数据 把 imglist的值 赋值给 images
+          let tem_normal_size = [];
+          this.imglist.forEach(v => {
+            tem_normal_size.push({
+              id: v.id,
+              url: v.thumb_path
+            });
+          });
+          // 数据处理完毕
+          this.images.normal_size = tem_normal_size;
+          // 强制让 组件重新生成一次
         });
     },
     // 获取评论信息
@@ -212,13 +271,69 @@ export default {
         });
     },
     // 页码改变
-    pageChange(pageNum){
-        // console.log('页码改变');
-        // console.log(pageNum);
-        // 修改页码
-        this.pageIndex = pageNum;
-        // 重新发请求
-        this.getComments();
+    pageChange(pageNum) {
+      // console.log('页码改变');
+      // console.log(pageNum);
+      // 修改页码
+      this.pageIndex = pageNum;
+      // 重新发请求
+      this.getComments();
+    },
+    // 页容量改变
+    sizeChange(pageSize) {
+      // console.log(pageSize);
+      // 修改变量
+      // 重新获取数据
+      this.pageSize = pageSize;
+      this.pageIndex = 1;
+      this.getComments();
+    },
+    // 提交评论
+    subComment() {
+      // 非空判断
+      if (this.message == "") {
+        // 提示
+        this.$Message.warning("哥们,写点东西呗");
+        // 跳出
+        return;
+      }
+      // 提交评论
+      // 传递参数
+      this.$axios
+        .post("site/validate/comment/post/goods/" + this.goodId, {
+          commenttxt: this.message
+        })
+        .then(response => {
+          console.log(response);
+          // 重新获取评论信息
+          // 修改获取的页码为1
+          this.pageIndex = 1;
+          this.getComments();
+          // 清空文本框的内容
+          this.message = "";
+          // 提示用户
+          this.$Message.success("评论发表成功了也");
+        });
+    },
+    // 测试累加个数
+    detailAdd() {
+      this.$store.commit("increment");
+    },
+    // 加入购物车
+    addCart() {
+      // 调用Vuex中的数据修改方法 提交载荷
+      this.$store.commit("addCart", {
+        id: this.goodId,
+        buyCount: this.buyNum
+      });
+
+      // 动画移动商品
+      //   console.log(this.$refs.move);
+      let startPos = $(this.$refs.add).offset();
+      console.log(startPos);
+      console.log(this.$parent.$refs.cart);
+      let targetPos = $(this.$parent.$refs.cart).offset();
+      // 获取元素位置
     }
   },
   // created中获取id 因为一会就要去调用接口
@@ -260,6 +375,34 @@ export default {
 .tab-content img {
   /* 变块 */
   display: block;
+}
+/* 约束放大镜父盒子的高度 */
+.pic-box {
+  width: 395px;
+  /* height: 320px; */
+}
+.inline-zoomer-hahaha-zoomer-box {
+  width: 300px;
+
+  height: 300px;
+}
+.preview-box img {
+  height: 250px;
+}
+.control-box {
+  height: 50px;
+}
+.control {
+  margin: 0 auto;
+}
+.control-box > div {
+  float: left;
+  height: 50px;
+}
+.control-box .thumb-list img {
+  width: 50px;
+  height: 50px;
+  float: left;
 }
 </style>
 
