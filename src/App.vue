@@ -11,16 +11,19 @@
             <a target="_blank" href="#"></a>
           </div>
           <div id="menu" class="right-box">
-            <span style="display: none;">
-              <a href="" class="">登录</a>
+            <!-- 没登录显示 -->
+            <span  v-show="$store.state.isLogin==false">
+              <!-- <a href="" class="">登录</a> -->
+              <router-link to="/login">登录</router-link>
               <strong>|</strong>
               <a href="" class="">注册</a>
               <strong>|</strong>
             </span>
-            <span>
+            <!-- 登录了显示 -->
+            <span  v-show="$store.state.isLogin==true">
               <a href="" class="">会员中心</a>
               <strong>|</strong>
-              <a>退出</a>
+              <a @click="logout">退出</a>
               <strong>|</strong>
             </span>
             <!-- <a href="" class=""> -->
@@ -184,6 +187,42 @@ export default {
         id: 66,
         buyCount: 98
       });
+    },
+    // 退出
+    logout() {
+      // 调用登出接口即可
+      this.$confirm("你确定要离开我了 o(╥﹏╥)o?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          // 成功 点击确定
+          // this.$message({
+          //   type: "success",
+          //   message: "登出"
+          // });
+          // 调用接口
+          this.$axios.get("/site/account/logout").then(response => {
+            // console.log(response);
+            if (response.data.status == 0) {
+              this.$message({
+                type: "success",
+                message: "记得常来哦!"
+              });
+              // 跳转页面
+              this.$router.push("/index");
+              // 修改vuex中的登录状态数据
+              this.$store.commit('changeLoginState',false);
+            }
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "算你有良心 哼!"
+          });
+        });
     }
   }
 };
@@ -209,5 +248,9 @@ export default {
   border: 1px solid skyblue;
   border-radius: 50%;
   /* border-radius: 2px; */
+}
+/* iView提示框 样式 修改 */
+.ivu-notice {
+  text-align: left;
 }
 </style>

@@ -105,8 +105,12 @@
                     <!--购物车底部-->
                     <div class="cart-foot clearfix">
                         <div class="right-box">
-                            <button class="button" onclick="javascript:location.href='/index.html';">继续购物</button>
-                            <button class="submit" onclick="formSubmit(this, '/', '/shopping.html');">立即结算</button>
+                            <router-link to="/index">
+                                <button class="button">继续购物</button>
+                            </router-link>
+                            <router-link to="/checkOrder">
+                                <button class="submit">立即结算</button>
+                            </router-link>
                         </div>
                     </div>
                     <!--购物车底部-->
@@ -192,13 +196,16 @@ export default {
     },
     // 删除数据 弹框提示
     delOne(id) {
+      //   消息框
       this.$confirm("库存不多啦,不买没有啦!!", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
       })
+        // 确定
         .then(() => {
-          // 删除Vuex中的数据
+          // 删除Vuex中的数据 调用 main.js中 仓库内部的代码
+          this.$store.commit("delById", id);
           // 以及当前这个组件中的数据
           this.goodList.forEach((v, index) => {
             if (v.id == id) {
@@ -211,6 +218,7 @@ export default {
             message: "删除成功!"
           });
         })
+        // 取消
         .catch(() => {
           this.$message({
             type: "info",
@@ -255,7 +263,6 @@ export default {
 //   }
 // //   background-color: hotpink;
 // }
-
 </style>
 
 

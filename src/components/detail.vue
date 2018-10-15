@@ -59,7 +59,7 @@
                                         <dd>
                                             <div id="buyButton" class="btn-buy">
                                                 <button onclick="cartAdd(this,'/',1,'/shopping.html');" class="buy">立即购买</button>
-                                                <button @click="addCart" ref='add' class="add">加入购物车</button>
+                                                <button @click="addCart" ref="toCart" class="add">加入购物车</button>
                                             </div>
                                         </dd>
                                     </dl>
@@ -154,12 +154,20 @@
                 </div>
             </div>
         </div>
-        <div class="move" ref='move'></div>
+        <!-- 
+            页面一打开 imglist 没有数据的
+            在created中的回调函数里面 才获取到服务器返回的数据
+            进而才能取到值
+            
+            默认情况没有数据 imglist[0] 是undefined  undeined.original_path
+            这里可以使用三元表达式 解决
+         -->
+        <img class="fly-img" ref="flyImg" style="display:none" :src="imglist.length==0?'':imglist[0].original_path" alt="">
     </div>
 </template>
 <script>
 // 导入jq
-import $ from "jquery";
+// import $ from "jquery";
 export default {
   name: "Detail",
   data: function() {
@@ -216,7 +224,9 @@ export default {
         scroll_items: 5,
         // 选中的缩略图边框颜色
         choosed_thumb_border_color: "#FF327A"
-      }
+      },
+      // 动画是否播放完毕
+      isFinish: true
     };
   },
   //   事件
@@ -321,19 +331,54 @@ export default {
     },
     // 加入购物车
     addCart() {
-      // 调用Vuex中的数据修改方法 提交载荷
-      this.$store.commit("addCart", {
-        id: this.goodId,
-        buyCount: this.buyNum
-      });
+      //   console.log(this);
+      //  判断动画是否播放完毕
+      if (this.isFinish == false) return;
+      // 代码能够执行到这 说明 isFinish 是true 设置isFinish为
+      this.isFinish = false;
+      this.$$(this.$refs.toCart).addClass("disabled");
 
-      // 动画移动商品
-      //   console.log(this.$refs.move);
-      let startPos = $(this.$refs.add).offset();
+      // 通过ref获取元素
+      console.log(this.$refs.toCart);
+      // 获取按钮的位置
+      let startPos = this.$$(this.$refs.toCart).offset();
       console.log(startPos);
       console.log(this.$parent.$refs.cart);
-      let targetPos = $(this.$parent.$refs.cart).offset();
-      // 获取元素位置
+      let targetPos = this.$$(this.$parent.$refs.cart).offset();
+      // 获取元素
+      this.$$(this.$refs.flyImg)
+        //   设置位置
+        .stop()
+        .show()
+        .addClass("animate")
+        .css(startPos)
+        // 显示出来
+        .animate(
+          {
+            left: targetPos.left,
+            top: targetPos.top
+          },
+          1000,
+          //   回调函数
+          () => {
+            //   console.log("飞完啦");
+            // console.log(this);
+            this.$$(this.$refs.flyImg)
+              .hide()
+              .removeClass("animate");
+            // 调用Vuex中的数据修改方法 提交载荷
+            this.$store.commit("addCart", {
+              id: this.goodId,
+              buyCount: this.buyNum
+            });
+            // 设置标示变量为true即可
+            this.isFinish = true;
+            // 移除类名
+            this.$$(this.$refs.toCart).removeClass("disabled");
+          }
+        );
+
+      // 获取父组件
     }
   },
   // created中获取id 因为一会就要去调用接口
@@ -403,6 +448,30 @@ export default {
   width: 50px;
   height: 50px;
   float: left;
+}
+/* 移动的图片
+    位置用代码去获取 这里不设置
+    因为用户的浏览器尺寸 是不可控的
+ */
+.fly-img {
+  width: 60px;
+  height: 60px;
+  position: absolute;
+  /* left: 880px;
+    top: 440px; */
+  /* display: none; */
+}
+/* 移动图片的 动画样式 */
+.fly-img.animate {
+  transform: rotate(3600deg) scale(0.5, 0.5);
+  opacity: 0;
+  /* All 所有 $.aniamte 操纵了元素的 left 和 top */
+  transition: transform 1s, opacity 2s;
+  /* transition:all 1s; */
+}
+.goods-spec .spec-box .btn-buy .add.disabled {
+  background-color: gray;
+  cursor: not-allowed;
 }
 </style>
 

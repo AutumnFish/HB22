@@ -36,6 +36,14 @@ Vue.prototype.$axios = axios;
 // Vue.prototype.$baseUrl = 'http://111.230.232.110:8899';
 // 直接使用axios来设置基础地址
 axios.defaults.baseURL = 'http://111.230.232.110:8899';
+// 设置axios跨域请求携带cookie
+// 跨域是否携带凭证
+axios.defaults.withCredentials = true;
+
+
+// 把jq导入到main.js中 挂载到原型里面
+import $ from 'jquery';
+Vue.prototype.$$ = $;
 
 // 图片放大镜功能
 import ProductZoomer from 'vue-product-zoomer'
@@ -52,6 +60,10 @@ import index from './components/index.vue';
 import detail from './components/detail.vue';
 // 导入购物车组件
 import shopcart from './components/shopcart.vue';
+// 导入 订单确认页组件
+import checkOrder from './components/checkOrder.vue'
+// 导入 登录组件
+import login from './components/login.vue'
 
 
 
@@ -64,29 +76,84 @@ const routes = [
   {
     path: '/',
     component: index
-
-
   },
   // 首页
   {
     path: '/index',
-    component: index
+    component: index,
+    meta:{
+      zhName:'首页'
+    }
   },
   // 详情页
   {
     path: '/detail/:goodId',
-    component: detail
+    component: detail,
+    meta:{
+      zhName:'详情页'
+    }
   },
   // 购物车
   {
-    path:'/shopcart',
-    component:shopcart
+    path: '/shopcart',
+    component: shopcart,
+    meta:{
+      zhName:'购物车'
+    }
+  },
+  // 订单确认页 
+  {
+    path: "/checkOrder",
+    component: checkOrder,
+    meta:{
+      zhName:'订单确认页 '
+    }
+  },
+  // 登陆
+  {
+    path: '/login',
+    component: login,
+    meta:{
+      zhName:'登陆'
+    }
   }
 ]
 
 // 实例化路由对象
 const router = new VueRouter({
   routes
+})
+
+// 注册导航守卫(回调函数,或者是钩子函数)
+router.beforeEach((to, from, next) => {
+  // console.log('跳转啦');
+  console.log(to);
+  window.document.title = to.meta.zhName;
+  
+  // console.log(from);
+  // 如果是去 订单确认页 登陆判断
+  if (to.path == '/checkOrder') {
+    // 登陆了 继续执行
+    axios.get("site/account/islogin").then(response => {
+      console.log(response);
+      if (response.data.code === 'nologin') {
+        // 打回登录页
+        // this.$router.push('/index');
+        // this.$message
+        Vue.prototype.$message.warning('还没登录呢,先登录哦');
+        // Vue.prototype.$Notice.warning({
+        //   title: 'Notification title',
+        //   desc: 'Here is the notification description. Here is the notification description. '
+        // });
+        router.push('/login');
+      } else {
+        // 不用干事情 登录了 继续访问
+        next();
+      }
+    });
+  } else {
+    next();
+  }
 })
 
 Vue.config.productionTip = false
@@ -127,7 +194,9 @@ const store = new Vuex.Store({
     // count: 0 复制出来的数据 测试用
     // 自己的购物车数据{id:购买数量}
     // 使用短路语法 
-    shopCartData: JSON.parse(window.localStorage.getItem('cartData'))||{}
+    shopCartData: JSON.parse(window.localStorage.getItem('cartData')) || {},
+    // 是否登陆
+    isLogin: false
   },
   // 修改数据的方式 
   mutations: {
@@ -160,7 +229,7 @@ const store = new Vuex.Store({
         // state.shopCartData[opt.id] = opt.buyCount
         // 为了让Vue可以观察到这个数据的改变 我们需要使用 Vue.set进行设置
         // Vue.set(obj, 'newProp', 123)
-        Vue.set(state.shopCartData,opt.id,opt.buyCount);
+        Vue.set(state.shopCartData, opt.id, opt.buyCount);
       } else {
         // 有 累加 对象也支持 对象[属性名]
         state.shopCartData[opt.id] += opt.buyCount;
@@ -168,9 +237,21 @@ const store = new Vuex.Store({
     },
     // 修改购物车商品数据
     // 参数{id:'',newCount:''}
-    updateCart(state,opt){
+    updateCart(state, opt) {
       // 使用新的数字 覆盖原始的数字
       state.shopCartData[opt.id] = opt.newCount;
+    },
+    // 删除id对应的数据即可
+    delById(state, id) {
+      // 如何删除对象中的一个属性 
+      // delete state.shopCartData[id]
+      // 使用Vue.delete删除才能同步
+      Vue.delete(state.shopCartData, id);
+    },
+    // 设置登陆状态
+    changeLoginState(state, loginState) {
+      // 直接赋值即可
+      state.isLogin = loginState;
     }
 
   },
@@ -195,11 +276,25 @@ new Vue({
   // 挂在到Vue实例
   router,
   // 挂载到 Vue示例上 方便 所有子组件访问
-  store
+  store,
+  // 生命周期函数
+  created() {
+    // console.log('顶级Vue示例的生命周期函数');
+    axios.get('site/account/islogin').then(response => {
+      // console.log(response);
+      if (response.data.code === 'logined') {
+        // 登录了
+        store.commit('changeLoginState', true);
+      } else {
+        // 没有登录
+        store.commit('changeLoginState', false);
+      }
+    })
+  },
 }).$mount('#app')
 
 // 浏览器关闭事件
-window.onbeforeunload = function(){
+window.onbeforeunload = function () {
   // 保存
-  window.localStorage.setItem('cartData',JSON.stringify(store.state.shopCartData))
+  window.localStorage.setItem('cartData', JSON.stringify(store.state.shopCartData))
 }
