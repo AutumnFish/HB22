@@ -213,6 +213,7 @@ export default {
               // 跳转页面
               this.$router.push("/index");
               // 修改vuex中的登录状态数据
+              // 登陆-2
               this.$store.commit('changeLoginState',false);
             }
           });

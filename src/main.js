@@ -25,6 +25,10 @@ Vue.use(VueLazyload, {
   // attempt: 1
 })
 
+// 二维码生成插件
+import VueQriously from 'vue-qriously'
+Vue.use(VueQriously)
+
 // 全局导入 axios vue-axios
 // vue-resource时 this.$http.xxx
 // axios axios.xxx
@@ -64,6 +68,8 @@ import shopcart from './components/shopcart.vue';
 import checkOrder from './components/checkOrder.vue'
 // 导入 登录组件
 import login from './components/login.vue'
+// 导入 订单中心组件
+import payOrder from './components/payOrder.vue'
 
 
 
@@ -81,40 +87,51 @@ const routes = [
   {
     path: '/index',
     component: index,
-    meta:{
-      zhName:'首页'
+    meta: {
+      zhName: '首页'
     }
   },
   // 详情页
   {
     path: '/detail/:goodId',
     component: detail,
-    meta:{
-      zhName:'详情页'
+    meta: {
+      zhName: '详情页'
     }
   },
   // 购物车
   {
     path: '/shopcart',
     component: shopcart,
-    meta:{
-      zhName:'购物车'
+    meta: {
+      zhName: '购物车'
     }
   },
   // 订单确认页 
   {
-    path: "/checkOrder",
+    path: "/checkOrder/:ids",
     component: checkOrder,
-    meta:{
-      zhName:'订单确认页 '
+    meta: {
+      zhName: '订单确认页',
+      // 增加的标示字段 有这个字段 就需要 登录判断
+      checkLogin: true
     }
   },
   // 登陆
   {
     path: '/login',
     component: login,
-    meta:{
-      zhName:'登陆'
+    meta: {
+      zhName: '登陆'
+    }
+  },
+  // 订单中心
+  {
+    path: '/payOrder/:orderId',
+    component: payOrder,
+    meta: {
+      // 增加的标示字段 有这个字段 就需要 登录判断
+      checkLogin: true
     }
   }
 ]
@@ -126,13 +143,15 @@ const router = new VueRouter({
 
 // 注册导航守卫(回调函数,或者是钩子函数)
 router.beforeEach((to, from, next) => {
-  // console.log('跳转啦');
-  console.log(to);
+  console.log('跳转啦');
+  // console.log(to);
   window.document.title = to.meta.zhName;
-  
+
   // console.log(from);
   // 如果是去 订单确认页 登陆判断
-  if (to.path == '/checkOrder') {
+  // if (to.path == '/checkOrder/:ids') {
+  // 如果有标记字段 就需要验证登录
+  if (to.meta.checkLogin == true) {
     // 登陆了 继续执行
     axios.get("site/account/islogin").then(response => {
       console.log(response);
@@ -154,6 +173,14 @@ router.beforeEach((to, from, next) => {
   } else {
     next();
   }
+})
+
+// 注册 后置钩子
+// 跳转完毕之后执行
+router.afterEach((to, from) => {
+  // console.log('跳转完毕');
+  // 滚动顶部
+  window.scroll(0, 0)
 })
 
 Vue.config.productionTip = false
@@ -249,6 +276,7 @@ const store = new Vuex.Store({
       Vue.delete(state.shopCartData, id);
     },
     // 设置登陆状态
+    // 登陆-1
     changeLoginState(state, loginState) {
       // 直接赋值即可
       state.isLogin = loginState;
@@ -283,7 +311,7 @@ new Vue({
     axios.get('site/account/islogin').then(response => {
       // console.log(response);
       if (response.data.code === 'logined') {
-        // 登录了
+        // 登录了 Vuex中的数据
         store.commit('changeLoginState', true);
       } else {
         // 没有登录

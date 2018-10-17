@@ -64,7 +64,7 @@ export default {
               // duration: 0
             });
           } else {
-            //    根据返回内容 提示用户
+            //  根据返回内容 提示用户
             this.$Notice.success({
               title: "欢迎你",
               desc: response.data.message
@@ -72,6 +72,7 @@ export default {
             // 跳转到 订单页
             this.$router.push("/checkOrder");
             // 修改vuex中的数据
+            // 登陆-3
             this.$store.commit('changeLoginState',true); 
             // 从哪来 回哪去 route(数据) router(路由) 
             // 小米  正宗小米

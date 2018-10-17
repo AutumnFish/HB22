@@ -108,7 +108,7 @@
                             <router-link to="/index">
                                 <button class="button">继续购物</button>
                             </router-link>
-                            <router-link to="/checkOrder">
+                            <router-link :to="'/checkOrder/'+checkIds">
                                 <button class="submit">立即结算</button>
                             </router-link>
                         </div>
@@ -250,6 +250,23 @@ export default {
         }
       });
       return totalPrice;
+    },
+    // 被选中的id们 id1,id2,id3
+    checkIds(){
+        // 遍历
+        let ids = '';
+        // 累加被选中的id
+        this.goodList.forEach(v=>{
+            // 如果被选中了
+            if(v.selected==true){
+                ids+=v.id;
+                ids+=','
+            }
+        })
+        // 去掉末尾的,
+        ids = ids.slice(0,-1);
+        // 返回即可
+        return ids;
     }
   }
 };
