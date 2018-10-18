@@ -70,6 +70,16 @@ import checkOrder from './components/checkOrder.vue'
 import login from './components/login.vue'
 // 导入 订单中心组件
 import payOrder from './components/payOrder.vue'
+// 支付成功页
+import paySuccess from './components/paySuccess.vue'
+// 个人中心页
+import userInfo from './components/userInfo.vue'
+// 个人中心页嵌套路由
+import info from './components/userInfoChildren/info.vue'
+// 个人中心页嵌套路由
+import orderList from './components/userInfoChildren/orderList.vue'
+// 个人中心页嵌套路由
+import orderInfo from './components/userInfoChildren/orderInfo.vue'
 
 
 
@@ -130,9 +140,65 @@ const routes = [
     path: '/payOrder/:orderId',
     component: payOrder,
     meta: {
+      // 增加字段 用来显示 title
+      zhName: '订单支付',
       // 增加的标示字段 有这个字段 就需要 登录判断
       checkLogin: true
     }
+  },
+  // 支付成功
+  {
+    path: '/paySuccess',
+    component: paySuccess,
+    meta: {
+      // 增加字段 用来显示 title
+      zhName: '成功啦!',
+      // 增加的标示字段 有这个字段 就需要 登录判断
+      checkLogin: true
+    }
+  },
+  // 会员中心
+  {
+    path: '/userInfo',
+    component: userInfo,
+    meta: {
+      // 增加字段 用来显示 title
+      zhName: '会员中心!',
+      // 增加的标示字段 有这个字段 就需要 登录判断
+      checkLogin: true
+    },
+    // 嵌套路由
+    children: [{
+        path: '',
+        component: info,
+        meta: {
+          // 增加字段 用来显示 title
+          zhName: '个人中心',
+          // 增加的标示字段 有这个字段 就需要 登录判断
+          checkLogin: true
+        }
+      },
+      {
+        path: 'orderList',
+        component: orderList,
+        meta: {
+          // 增加字段 用来显示 title
+          zhName: '订单中心',
+          // 增加的标示字段 有这个字段 就需要 登录判断
+          checkLogin: true
+        }
+      },
+      {
+        path: 'orderInfo/:orderId',
+        component: orderInfo,
+        meta: {
+          // 增加字段 用来显示 title
+          zhName: '订单详情',
+          // 增加的标示字段 有这个字段 就需要 登录判断
+          checkLogin: true
+        }
+      },
+    ]
   }
 ]
 

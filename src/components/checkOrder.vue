@@ -350,11 +350,11 @@ export default {
             // 删除购物车中 当前选中的数据
             // Vuex中的数据
             for (const key in this.ruleForm.cargoodsobj) {
-                // 调用vuex中的根据id删除 数据的方法
-                this.$store.commit('delById',key);
+              // 调用vuex中的根据id删除 数据的方法
+              this.$store.commit("delById", key);
             }
             // 跳转到订单支付页
-            this.$router.push('/payOrder/'+response.data.message.orderid);
+            this.$router.push("/payOrder/" + response.data.message.orderid);
           } else {
             this.$message.error("订单创建失败");
           }

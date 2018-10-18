@@ -62,7 +62,7 @@
                                     </div>
                                 </div>
                                 <div class="el-row">
-                                    <div class="el-col el-col-12" >
+                                    <div class="el-col el-col-12">
                                         <dl class="form-group">
                                             <dt>送货地址：</dt>
                                             <dd>{{orderInfo.area}}{{orderInfo.address}}
@@ -74,7 +74,8 @@
                             <div class="el-col el-col-6">
                                 <div id="container2">
                                     <!-- <img src="../assets/img/pay.jpg" alt=""> -->
-                                    <qriously value="https://www.baidu.com/" :size="200" />
+                                    <!-- 这里是直接扫码跳转到支付页面 需要设置一个完整的地址  -->
+                                    <qriously :value="'http://111.230.232.110:8899/site/validate/pay/alipay/'+orderId" :size="200" />
                                 </div>
                             </div>
                         </div>
@@ -91,8 +92,24 @@ export default {
     return {
       orderId: 0,
       // 订单数据
-      orderInfo: {}
+      orderInfo: {},
+      // 定时器id
+      interId: 0
     };
+  },
+  // 方法
+  methods: {
+    // 获取订单数据
+    getOrderInfo() {
+      this.$axios
+        .get("site/validate/order/getorder/" + this.orderId)
+        .then(response => {
+          console.log(response);
+          // 获取订单信息
+          this.orderInfo = response.data.message[0];
+        });
+    }
+    //
   },
   // 生命周期函数
   created() {
@@ -100,13 +117,30 @@ export default {
     // console.log(this.$route);
     this.orderId = this.$route.params.orderId;
     // 调用接口获取数据
-    this.$axios
-      .get("site/validate/order/getorder/" + this.orderId)
-      .then(response => {
-        // console.log(response);
-        // 获取订单信息
-        this.orderInfo = response.data.message[0];
-      });
+    this.getOrderInfo();
+    // 开启定时器 间隔获取订单信息
+    this.interId = setInterval(() => {
+      // 调用接口
+      this.$axios
+        .get("site/validate/order/getorder/" + this.orderId)
+        .then(response => {
+          //   console.log(response);
+          // 获取订单信息
+          this.orderInfo = response.data.message[0];
+          // 判断订单的状态
+          if (this.orderInfo.status == 2) {
+            // 订单支付成功
+            this.$message.success("支付成功 ^_^");
+            // 跳转页面
+            this.$router.push('/paySuccess');
+          }
+        });
+    }, 1500);
+  },
+  // 被销毁的时候触发
+  destroyed(){
+    //   console.log('我被干掉了');
+    clearInterval(this.interId);
   }
 };
 </script>

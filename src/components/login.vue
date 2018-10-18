@@ -70,7 +70,7 @@ export default {
               desc: response.data.message
             });
             // 跳转到 订单页
-            this.$router.push("/checkOrder");
+            // this.$router.push("/checkOrder");
             // 修改vuex中的数据
             // 登陆-3
             this.$store.commit('changeLoginState',true); 

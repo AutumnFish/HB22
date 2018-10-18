@@ -12,7 +12,7 @@
           </div>
           <div id="menu" class="right-box">
             <!-- 没登录显示 -->
-            <span  v-show="$store.state.isLogin==false">
+            <span v-show="$store.state.isLogin==false">
               <!-- <a href="" class="">登录</a> -->
               <router-link to="/login">登录</router-link>
               <strong>|</strong>
@@ -20,8 +20,12 @@
               <strong>|</strong>
             </span>
             <!-- 登录了显示 -->
-            <span  v-show="$store.state.isLogin==true">
-              <a href="" class="">会员中心</a>
+            <span v-show="$store.state.isLogin==true">
+              <!-- <a href="" class=""> -->
+              <router-link to="/userInfo/">
+                会员中心
+              </router-link>
+              <!-- </a> -->
               <strong>|</strong>
               <a @click="logout">退出</a>
               <strong>|</strong>
@@ -214,7 +218,7 @@ export default {
               this.$router.push("/index");
               // 修改vuex中的登录状态数据
               // 登陆-2
-              this.$store.commit('changeLoginState',false);
+              this.$store.commit("changeLoginState", false);
             }
           });
         })
