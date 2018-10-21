@@ -94,7 +94,10 @@
     </div>
     <!-- <input type="button" value="累加数字" @click="add"> -->
     <!-- 组件出口 -->
-    <router-view></router-view>
+    <!-- 使用 keep-alive 缓存了所有的页面 有些页面不需要缓存 -->
+    <keep-alive include="index">
+      <router-view></router-view>
+    </keep-alive>
     <!-- 底部 -->
     <div class="footer">
       <div class="section">

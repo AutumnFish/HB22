@@ -90,7 +90,7 @@ export default {
 </script>
 <style>
 /* 去除顶部的padding */
-.sub-tit {
+div.sub-tit {
   padding-top: 0;
 }
 /* 头像盒子的高度不能固定 */
